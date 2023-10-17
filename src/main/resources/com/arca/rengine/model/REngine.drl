@@ -1,0 +1,54 @@
+package com.arca.rengine.model;
+
+import com.arca.rengine.model.InvoiceDetails;
+import com.arca.rengine.model.RObjectInList;
+import com.arca.rengine.model.RObjectIn;
+
+rule "If Record not found in RNE with OpenAR"
+when
+    $pcust: RObjectInList($pcustomer : pCustomer)
+    $cust: RObjectIn(has_cust_match == "false") from $pcust.getpCustomer()
+then
+    $cust.setPosting_rule_flag("Z034");
+end
+
+rule "Customer found and Invoice count match(Z035)"
+when
+    $pcust: RObjectInList($pcustomer : pCustomer)
+    $cust: RObjectIn(has_cust_match == "true", has_inv_count_match == "true", has_inv_sum_match == "false", has_inv_numbr_match == "false") from $pcust.getpCustomer()
+then
+    $cust.setPosting_rule_flag("Z035");
+end
+
+rule "Invoice Sum and Count mismatch(Z035)"
+when
+    $pcust: RObjectInList($pcustomer : pCustomer)
+    $cust: RObjectIn(has_cust_match == "true", has_inv_count_match == "false", has_inv_sum_match == "false", has_inv_numbr_match == "true") from $pcust.getpCustomer()
+then
+    $cust.setPosting_rule_flag("Z035");
+end
+
+rule "Customer found but Invoice count mismatch(Z035)"
+when
+    $pcust: RObjectInList($pcustomer : pCustomer)
+    $cust: RObjectIn(has_cust_match == "true", has_inv_count_match == "false", has_inv_sum_match == "true", has_inv_numbr_match == "true") from $pcust.getpCustomer()
+then
+    $cust.setPosting_rule_flag("Z035");
+end
+
+rule "Invoice Sum mismatch(Z035)"
+when
+    $pcust: RObjectInList($pcustomer : pCustomer)
+    $cust: RObjectIn(has_cust_match == "true", has_inv_count_match == "true", has_inv_sum_match == "false", has_inv_numbr_match == "true") from $pcust.getpCustomer()
+then
+    $cust.setPosting_rule_flag("Z035");
+end
+
+rule "Happy Path (Z036) match the Customer in RNE with OpenAR"
+when
+    $pcust: RObjectInList($pcustomer : pCustomer)
+    $cust: RObjectIn(has_cust_match == "true",has_inv_count_match == "true", has_inv_sum_match == "true", has_inv_numbr_match == "true") from $pcust.getpCustomer()
+then
+    //System.out.println("High-value purchase detected: " + $cust.getInv_dtl());
+    $cust.setPosting_rule_flag("Z036");
+end
